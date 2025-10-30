@@ -19,6 +19,10 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
 
+    defaults:
+      run:
+        shell: bash -l {0}
+
     strategy:
       fail-fast: false
       matrix:
@@ -192,4 +196,4 @@ jobs:
           echo "Vector ${{ steps.test-vector.outputs.success && '✅ Passed' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
           echo "Coffea ${{ steps.test-coffea.outputs.success && '✅ Passed' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
           # Ignore the output outcome of dask-awkward since it's flaky
-          exit ${{ matrix.os == 'windows-latest' && '/b' || '' }} ${{ steps.test-awkward.outputs.success && steps.test-uproot.outputs.success && steps.test-vector.outputs.success && steps.test-coffea.outputs.success && '0' || '1' }}
+          ${{ steps.test-awkward.outputs.success && steps.test-uproot.outputs.success && steps.test-vector.outputs.success && steps.test-coffea.outputs.success && 'true' || 'false' }}
