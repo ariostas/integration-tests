@@ -48,7 +48,9 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Sync env
-        run: GIT_LFS_SKIP_SMUDGE=1 uv sync
+        run: |
+          ${{ matrix.os == 'windows-latest' && 'set GIT_LFS_SKIP_SMUDGE=1' || 'export GIT_LFS_SKIP_SMUDGE=1' }}
+          uv sync
 
       - name: Clone scikit-hep/awkward
         uses: actions/checkout@v4
