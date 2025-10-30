@@ -49,7 +49,7 @@ jobs:
 
       - name: Sync env
         run: |
-          ${{ matrix.os == 'windows-latest' && 'set GIT_LFS_SKIP_SMUDGE=1' || 'export GIT_LFS_SKIP_SMUDGE=1' }}
+          git lfs install --skip-smudge
           uv sync
 
       - name: Clone scikit-hep/awkward
