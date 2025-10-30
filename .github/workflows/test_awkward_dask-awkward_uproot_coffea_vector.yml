@@ -22,16 +22,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: [ubuntu-latest, macOS-latest, windows-latest] # macOS & windows currently broken
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macOS-latest, windows-latest]
         java-version: [17]
         java-distribution: ["corretto"]
-        python-version:
-          - "3.9" # lowest
-          - "3.10"
-          - "3.11"
-          - "3.12"
-          - "3.13" # highest
+        python-version: ["3.9", "3.14"]
         dask-client: ["with", "without"]
 
     name: Test (${{ matrix.os }}) - 🐍 ${{ matrix.python-version }}, JDK${{ matrix.java-version }}, ${{ matrix.dask-client }} dask
@@ -47,11 +41,6 @@ jobs:
         with:
           java-version: ${{ matrix.java-version }}
           distribution: ${{ matrix.java-distribution }}
-
-      - name: Add workaround for 3.13 + cramjam
-        if: matrix.python-version == '3.13'
-        run: echo 'PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1' >> $GITHUB_ENV
-        shell: bash
 
       - uses: actions/checkout@v4
 
@@ -150,12 +139,11 @@ jobs:
       - name: Test dask-contrib/dask-awkward
         run: uv run pytest -vv -rs repo-dask-awkward/tests -n 1
 
-      # Enable again when they run
-      # - name: Test scikit-hep/uproot5
-      #   run: |
-      #     cd repo-uproot5/
-      #     uv run --project .. pytest -vv -rs tests --reruns 10 --reruns-delay 30 --only-rerun "(?i)http|ssl|timeout|expired|connection|socket"
-      #     cd ..
+      - name: Test scikit-hep/uproot5
+        run: |
+          cd repo-uproot5/
+          uv run --project .. pytest -vv -rs tests --reruns 10 --reruns-delay 30 --only-rerun "(?i)http|ssl|timeout|expired|connection|socket"
+          cd ..
 
       - name: Test dask-contrib/vector
         run: |
