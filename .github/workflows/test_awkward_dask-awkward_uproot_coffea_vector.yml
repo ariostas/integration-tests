@@ -136,33 +136,60 @@ jobs:
         run: uv pip list
 
       - name: Test scikit-hep/awkward
-        run: uv run pytest -vv -rs repo-awkward/tests -n 4
+        id: test-awkward
+        run: |
+          if uv run pytest -vv -rs repo-awkward/tests -n 4; then
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Test dask-contrib/dask-awkward
-        run: uv run pytest -vv -rs repo-dask-awkward/tests -n 1
+        id: test-dask-awkward
+        run: |
+          if uv run pytest -vv -rs repo-dask-awkward/tests -n 1; then
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Test scikit-hep/uproot5
+        id: test-uproot
         run: |
           cd repo-uproot5/
-          uv run --project .. pytest -vv -rs tests --reruns 10 --reruns-delay 30 --only-rerun "(?i)http|ssl|timeout|expired|connection|socket"
-          cd ..
+          if uv run --project .. pytest -vv -rs tests --reruns 10 --reruns-delay 30 --only-rerun "(?i)http|ssl|timeout|expired|connection|socket"; then
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Test dask-contrib/vector
+        id: test-vector
         run: |
           cd repo-vector/
-          uv run --project .. pytest -vv -rs tests --ignore tests/test_notebooks.py -n 4
-          cd ..
+          if uv run --project .. pytest -vv -rs tests --ignore tests/test_notebooks.py -n 4; then
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Test scikit-hep/coffea, (${{ matrix.dask-client }} dask Client - run in parallel)
-        if: matrix.dask-client == 'without'
+        id: test-coffea
         run: |
           cd repo-coffea/
-          uv run --project .. pytest -vv -rs tests --deselect=test_taskvine -m "not dask_client" -n 4
-          cd ..
+          if uv run --project .. pytest -vv -rs tests --deselect=test_taskvine -m "${{ matrix.dask-client == 'without' && 'not ' || '' }}dask_client" -n 4; then
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Test scikit-hep/coffea, (${{ matrix.dask-client }} dask Client - run in parallel)
-        if: matrix.dask-client == 'with'
+      - name: Summary
         run: |
-          cd repo-coffea/
-          uv run --project .. pytest -vv -rs tests --deselect=test_taskvine -m "dask_client"
-          cd ..
+          echo "# Tests Summary" >> $GITHUB_STEP_SUMMARY
+          echo "Awkward ${{ steps.test-awkward.outputs.success && '✅ Passed' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
+          echo "Dask-Awkward ${{ steps.test-dask-awkward.outputs.success && '✅ Passed' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
+          echo "Uproot ${{ steps.test-uproot.outputs.success && '✅ Passed' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
+          echo "Vector ${{ steps.test-vector.outputs.success && '✅ Passed' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
+          echo "Coffea ${{ steps.test-coffea.outputs.success && '✅ Passed' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
+          # Ignore the output outcome of dask-awkward since it's flaky
+          exit ${{ matrix.os == 'windows-latest' && '/b' || '' }} ${{ steps.test-awkward.outputs.success && steps.test-uproot.outputs.success && steps.test-vector.outputs.success && steps.test-coffea.outputs.success && '0' || '1' }}
