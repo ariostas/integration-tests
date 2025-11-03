@@ -21,7 +21,7 @@ jobs:
 
     defaults:
       run:
-        shell: ${{ matrix.os == 'windows-latest' && 'bash -l {0}' || '' }}
+        shell: bash
 
     strategy:
       fail-fast: false
