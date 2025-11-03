@@ -233,6 +233,6 @@ jobs:
         run: |
           echo "---" > final_results.md
           echo "| System Configuration | Awkward | Dask-Awkward | Uproot | Vector | Coffea |" >> final_results.md
-          echo "| --- | --- | --- | --- | --- | --- |"
+          echo "| --- | --- | --- | --- | --- | --- |" >> final_results.md
           cat results/*.md >> final_results.md
           cat final_results.md > $GITHUB_STEP_SUMMARY
