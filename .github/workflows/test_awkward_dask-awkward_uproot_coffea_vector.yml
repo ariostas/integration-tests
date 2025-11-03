@@ -145,8 +145,7 @@ jobs:
       - name: Test scikit-hep/awkward
         id: test-awkward
         run: |
-          # if uv run pytest -vv -rs repo-awkward/tests -n 4; then
-          if true; then
+          if uv run pytest -vv -rs repo-awkward/tests -n 4; then
             echo "success=true" >> $GITHUB_OUTPUT
           else
             echo "success=false" >> $GITHUB_OUTPUT
@@ -155,8 +154,7 @@ jobs:
       - name: Test dask-contrib/dask-awkward
         id: test-dask-awkward
         run: |
-          # if uv run pytest -vv -rs repo-dask-awkward/tests -n 1; then
-          if true; then
+          if uv run pytest -vv -rs repo-dask-awkward/tests -n 1; then
             echo "success=true" >> $GITHUB_OUTPUT
           else
             echo "success=false" >> $GITHUB_OUTPUT
@@ -166,8 +164,7 @@ jobs:
         id: test-uproot
         run: |
           cd repo-uproot5/
-          # if uv run --project .. pytest -vv -rs tests --reruns 10 --reruns-delay 30 --only-rerun "(?i)http|ssl|timeout|expired|connection|socket"; then
-          if true; then
+          if uv run --project .. pytest -vv -rs tests --reruns 10 --reruns-delay 30 --only-rerun "(?i)http|ssl|timeout|expired|connection|socket"; then
             echo "success=true" >> $GITHUB_OUTPUT
           else
             echo "success=false" >> $GITHUB_OUTPUT
@@ -177,8 +174,7 @@ jobs:
         id: test-vector
         run: |
           cd repo-vector/
-          # if uv run --project .. pytest -vv -rs tests --ignore tests/test_notebooks.py -n 4; then
-          if true; then
+          if uv run --project .. pytest -vv -rs tests --ignore tests/test_notebooks.py -n 4; then
             echo "success=true" >> $GITHUB_OUTPUT
           else
             echo "success=false" >> $GITHUB_OUTPUT
@@ -188,8 +184,7 @@ jobs:
         id: test-coffea
         run: |
           cd repo-coffea/
-          # if uv run --project .. pytest -vv -rs tests --deselect=test_taskvine -m "${{ matrix.dask-client == 'without' && 'not ' || '' }}dask_client" -n 4; then
-          if true; then
+          if uv run --project .. pytest -vv -rs tests --deselect=test_taskvine -m "${{ matrix.dask-client == 'without' && 'not ' || '' }}dask_client" -n 4; then
             echo "success=true" >> $GITHUB_OUTPUT
           else
             echo "success=false" >> $GITHUB_OUTPUT
@@ -216,7 +211,7 @@ jobs:
 
 
   summary:
-    name: Generate summary
+    name: Collect results
     runs-on: ubuntu-latest
     needs: test
     if: always()
@@ -229,7 +224,7 @@ jobs:
           merge-multiple: true
           path: results
 
-      - name: Generate finally summary
+      - name: Generate final summary
         run: |
           echo "---" > final_results.md
           echo "| System Configuration | Awkward | Dask-Awkward | Uproot | Vector | Coffea |" >> final_results.md
