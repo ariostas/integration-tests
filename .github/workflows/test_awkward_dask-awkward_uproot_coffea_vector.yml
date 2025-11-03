@@ -34,6 +34,9 @@ jobs:
 
     name: Test (${{ matrix.os }}) - 🐍 ${{ matrix.python-version }}, JDK${{ matrix.java-version }}, ${{ matrix.dask-client }} dask
 
+    env:
+      FILENAME: results-${{ matrix.os }}-${{ matrix.python-version }}-JDK${{ matrix.java-version }}-${{ matrix.dask-client }}.md
+
     steps:
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -194,7 +197,6 @@ jobs:
 
       - name: Save results to file
         run: |
-          export FILENAME = results-${{ matrix.os }}-{{ matrix.python-version }}-JDK${{ matrix.java-version }}-${{ matrix.dask-client }}.md
           echo -n "| ${{ matrix.os }}, Python${{ matrix.python-version }}, JDK${{ matrix.java-version }}, ${{ matrix.dask-client }} Dask | " > $FILENAME
           echo -n "${{ steps.test-awkward.outputs.success && '✅' || '❌' }} | " >> $FILENAME
           echo -n "${{ steps.test-dask-awkward.outputs.success && '✅' || '❌' }} | " >> $FILENAME
@@ -204,6 +206,13 @@ jobs:
           # Fail the job if any of the tests failed
           # Ignore the output outcome of dask-awkward since it's flaky
           ${{ steps.test-awkward.outputs.success && steps.test-uproot.outputs.success && steps.test-vector.outputs.success && steps.test-coffea.outputs.success && 'true' || 'false' }}
+
+      
+      - name: Upload results artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: results
+          path: ${{ env.FILENAME }}
 
 
   summary:
@@ -217,14 +226,14 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          path: results
 
       - name: List downloaded files
-        run: ls artifacts
+        run: ls results
 
       - name: Concatenate files
         run: |
-          cat artifacts/*/*.md > combined.md
+          cat results/*/*.md > combined.md
           cat combined.md
           cat combined.md > $GITHUB_STEP_SUMMARY
 
