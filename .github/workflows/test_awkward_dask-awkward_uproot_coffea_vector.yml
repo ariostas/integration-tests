@@ -226,14 +226,13 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: results-*
+          merge-multiple: true
+          path: results
 
-      - name: List downloaded files
-        run: ls
-
-      - name: Concatenate files
+      - name: Generate finally summary
         run: |
-          cat results-*/*/*.md > combined.md
-          cat combined.md
-          cat combined.md > $GITHUB_STEP_SUMMARY
-
+          echo "---" > final_results.md
+          echo "| System Configuration | Awkward | Dask-Awkward | Uproot | Vector | Coffea |" >> final_results.md
+          echo "| --- | --- | --- | --- | --- | --- |"
+          cat results/*.md >> final_results.md
+          cat final_results.md > $GITHUB_STEP_SUMMARY
